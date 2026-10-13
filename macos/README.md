@@ -53,6 +53,8 @@ PKCS12 options.
    and enables controls once the TV accepts its control subscriptions.
 
 Keep the connection open while entering the code. Restarting can invalidate it.
+The native app requests network access before starting the TV backend and waits
+for connectivity while macOS presents its permission prompt.
 macOS 15 and newer manage app access under **System Settings > Privacy & Security
 > Local Network**. A denied connection can report “No route to host” while SSH
 still works. A new local build can require permission again because its signing

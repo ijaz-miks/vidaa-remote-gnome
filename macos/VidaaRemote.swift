@@ -1,6 +1,7 @@
 import AppKit
 import Darwin
 import Foundation
+import Network
 import Security
 import SwiftUI
 
@@ -153,6 +154,7 @@ final class RemoteModel: ObservableObject {
     @Published var tab = 0
     private let backend = BackendProcess()
     private var initialDevice = true
+    private var networkProbe: NWConnection?
     let preview: Bool
     var ready: Bool { state == "ready" }
 
@@ -178,7 +180,35 @@ final class RemoteModel: ObservableObject {
     }
 
     func action(_ method: String, _ args: [String: Any] = [:]) {
-        if !preview { backend.send(["method": method, "args": args]) }
+        if preview { return }
+        if method == "connect", !host.isEmpty {
+            networkProbe?.cancel()
+            let probe = NWConnection(host: NWEndpoint.Host(host), port: 36669, using: .tcp)
+            networkProbe = probe
+            state = "connecting"; busy = true
+            status = "Waiting for TV and Local Network access"
+            probe.stateUpdateHandler = { [weak self, weak probe] state in
+                DispatchQueue.main.async {
+                    guard let self, let probe, self.networkProbe === probe else { return }
+                    switch state {
+                    case .ready:
+                        self.networkProbe = nil
+                        probe.cancel()
+                        self.backend.send(["method": method, "args": args])
+                    case .waiting:
+                        self.status = "Check TV connection and allow Local Network access"
+                    case .failed:
+                        self.networkProbe = nil
+                        self.fail("Cannot reach the TV. Check its address and Mac Local Network permission, then reconnect.")
+                    default: break
+                    }
+                }
+            }
+            probe.start(queue: DispatchQueue(label: "vidaa.local-network"))
+        } else {
+            if method == "disconnect" { networkProbe?.cancel(); networkProbe = nil }
+            backend.send(["method": method, "args": args])
+        }
     }
 
     func find() { finding = true; action("discover") }
@@ -190,7 +220,7 @@ final class RemoteModel: ObservableObject {
         error = message; showingError = true; busy = false
         if !ready { state = "error"; status = "Connection needs attention" }
     }
-    func stop() { backend.stop() }
+    func stop() { networkProbe?.cancel(); backend.stop() }
 
     func importCertificate() {
         let panel = NSOpenPanel()
