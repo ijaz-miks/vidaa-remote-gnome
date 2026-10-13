@@ -402,6 +402,9 @@ class DirectController:
                     self.emit('pair-acknowledged', {})
             elif 'authentication' in topic:
                 if topic.endswith('/authenticationcode'):
+                    # A delayed PIN reply cannot override an already authorized session.
+                    if self.ready and self.token and not self.refreshing:
+                        return
                     result = data.get('result') if isinstance(data, dict) else None
                     self.emit('pairing-response', {'result': result,
                               'fields': list(data) if isinstance(data, dict) else type(data).__name__})

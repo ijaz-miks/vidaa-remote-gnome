@@ -58,6 +58,25 @@ class BackendTests(unittest.TestCase):
         c.set_source({'sourceid': 'HDMI4', 'sourcename': 'HDMI4'})
         self.assertEqual(json.loads(c.client.publish.call_args.args[1]), {'sourceid': 'HDMI4'})
 
+    def test_delayed_pin_rejection_does_not_interrupt_authorized_controls(self):
+        c = self.direct(); c.ready = True
+        c.token = {'accesstoken': 'own-fixture'}
+        msg = SimpleNamespace(topic=f'/remoteapp/mobile/{c.cid}/ui_service/data/authenticationcode',
+                              payload=b'{"result":100}')
+        c._message(c.client, None, msg)
+        c.emit.assert_not_called()
+        self.assertTrue(c.ready)
+        c.send_key('KEY_VOLUMEUP')
+        c.client.publish.assert_called_once()
+
+    def test_pin_rejection_is_reported_before_authorization(self):
+        c = self.direct()
+        msg = SimpleNamespace(topic=f'/remoteapp/mobile/{c.cid}/ui_service/data/authenticationcode',
+                              payload=b'{"result":100}')
+        c._message(c.client, None, msg)
+        self.assertTrue(any(call.args[0] == 'error' for call in c.emit.call_args_list))
+        self.assertFalse(c.ready)
+
     def test_foreign_client_token_cannot_be_saved_by_this_app(self):
         c = self.direct(); c.tokens = Mock()
         msg = SimpleNamespace(topic='/remoteapp/mobile/PHONE/platform_service/data/tokenissuance',
