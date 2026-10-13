@@ -28,3 +28,20 @@ jobs:
       - name: Preview without device access
         run: |
           dbus-run-session -- xvfb-run -a "$RUNNER_TEMP/vidaa-bin/vidaa-remote" --preview --quit-after 3
+  macos:
+    runs-on: macos-14
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          clean: false
+          persist-credentials: false
+      - name: Build and verify the native app
+        run: |
+          /usr/bin/python3 macos/install.py --destination "$RUNNER_TEMP/VIDAA Remote.app"
+      - name: Test shared backend and private bridge
+        run: |
+          PYTHONPATH="$RUNNER_TEMP/VIDAA Remote.app/Contents/Resources/pythonlib:$GITHUB_WORKSPACE/tests" /usr/bin/python3 -m unittest test_backend test_mac_bridge -v
+      - name: Preview without TV or Keychain access
+        run: |
+          open -W -n "$RUNNER_TEMP/VIDAA Remote.app" --args --preview --quit-after 4

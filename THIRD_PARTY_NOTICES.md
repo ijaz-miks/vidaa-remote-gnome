@@ -1,6 +1,6 @@
 # Third-party notices
 
-VIDAA Remote GNOME's application code is licensed under the MIT license in
+VIDAA Remote's GNOME and macOS application code is licensed under the MIT license in
 LICENSE. The project does not redistribute the VIDAA Android app, APKs,
 client certificates, private keys, or TV pairing tokens.
 
@@ -15,7 +15,7 @@ projects:
 - [Tom Babolewski's vidaa-control](https://github.com/tombabolewski/vidaa-control).
 
 Their copyright and permission notices are reproduced in licenses/.
-This project implements the GNOME interface and local protocol client itself;
+This project implements its native interfaces and local protocol client itself;
 it does not vendor those Python packages.
 
 ## Runtime dependency
@@ -27,6 +27,7 @@ with the separately installed package.
 
 GTK, libadwaita, PyGObject, and libsecret are provided by the operating system
 under their own licenses. Cryptography is an optional test dependency.
+The macOS interface uses SwiftUI, AppKit, and Security frameworks supplied by macOS.
 
 ## Names and icon
 

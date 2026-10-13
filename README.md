@@ -1,8 +1,11 @@
-# VIDAA Remote for GNOME
+# VIDAA Remote for GNOME and macOS
 
 A native GTK 4 and libadwaita remote control for VIDAA televisions on Ubuntu.
 Pair the desktop with its own TV authorization and control the TV over your
 local network. Direct control does not require the phone to stay connected.
+
+A native SwiftUI macOS interface uses the same tested backend and stores its
+independent Mac pairing in Keychain. See [macOS setup](macos/README.md).
 
 ![Demo remote interface](docs/screenshots/remote-demo.png)
 
@@ -13,10 +16,10 @@ not an official VIDAA or Hisense application.
 
 - Discover compatible TVs with SSDP, or enter an IP address.
 - Pair using the code displayed on the TV, with a separate desktop identity.
-- Keep access and refresh tokens in GNOME Keyring.
+- Keep access and refresh tokens in GNOME Keyring on Linux or Keychain on macOS.
 - Navigate, adjust volume, mute, change channels, and send playback keys.
 - Select TV inputs and launch apps returned by the TV.
-- Use arrow keys, Enter, and Escape from the remote page.
+- Use arrow keys, Enter, and Escape from the GNOME remote page.
 - Send Wake-on-LAN requests when the TV's standby settings support them.
 - Optionally operate the installed VIDAA Android remote over authorized USB ADB.
 
@@ -133,10 +136,11 @@ an experimental fallback and depends on the Android app's resource layout.
 - Commands stay disabled until authorization succeeds. Mutating commands are
   not automatically replayed after connection loss.
 - Settings and client certificates stay under `~/.config/vidaa-remote`, outside
-  the repository. Never attach them, APKs, raw traffic captures, or pairing codes
+  the repository on Linux, or `~/Library/Application Support/VIDAA Remote` on
+  macOS. Never attach them, APKs, raw traffic captures, or pairing codes
   to a public issue.
 - `--preview` uses fictional settings, never connects to a TV, and does not read
-  real configuration or GNOME Keyring entries.
+  real configuration or desktop Keyring/Keychain entries.
 
 The initial certificate trust is based on the TV selected by the user. Pairing
 requires the code displayed on that TV. If its fingerprint changes after a
