@@ -22,7 +22,8 @@ import sys
 ROOT = Path(__file__).resolve().parent
 import paho.mqtt.client as mqtt
 
-CONFIG_DIR = Path(os.environ.get('XDG_CONFIG_HOME', str(Path.home() / '.config'))) / 'vidaa-remote'
+CONFIG_DIR = (Path.home() / 'Library/Application Support/VIDAA Remote' if sys.platform == 'darwin'
+              else Path(os.environ.get('XDG_CONFIG_HOME', str(Path.home() / '.config'))) / 'vidaa-remote')
 CONFIG_FILE = CONFIG_DIR / 'settings.json'
 CERT_FILE = CONFIG_DIR / 'client.pem'
 ADB = os.environ.get('VIDAA_ADB') or shutil.which('adb') or 'adb'

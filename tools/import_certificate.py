@@ -33,8 +33,11 @@ def decode_archive(data, password):
     openssl = shutil.which('openssl')
     if not openssl:
         raise RuntimeError('Install OpenSSL before importing the certificate.')
+    version = subprocess.run([openssl, 'version'], capture_output=True, text=True, timeout=10)
+    major = re.match(r'OpenSSL (\d+)\.', version.stdout)
+    legacy = ['-legacy'] if major and int(major.group(1)) >= 3 else []
     env = dict(os.environ, VIDAA_IMPORT_P12_PASSWORD=password)
-    result = subprocess.run([openssl, 'pkcs12', '-legacy', '-clcerts', '-nodes',
+    result = subprocess.run([openssl, 'pkcs12'] + legacy + ['-clcerts', '-nodes',
                              '-passin', 'env:VIDAA_IMPORT_P12_PASSWORD'],
                             input=data, capture_output=True, env=env, timeout=15)
     if result.returncode:
@@ -97,8 +100,9 @@ def main():
     parser.add_argument('--serial', default=os.environ.get('VIDAA_DEVICE_SERIAL', ''))
     parser.add_argument('--adb', default=os.environ.get('VIDAA_ADB') or shutil.which('adb') or 'adb')
     parser.add_argument('--password-env', default='VIDAA_PKCS12_PASSWORD', help='Environment variable containing the P12 archive password')
-    default_config = Path(os.environ.get('XDG_CONFIG_HOME', str(Path.home() / '.config')))
-    parser.add_argument('--output', type=Path, default=default_config / 'vidaa-remote/client.pem')
+    default_config = (Path.home() / 'Library/Application Support/VIDAA Remote' if sys.platform == 'darwin'
+                      else Path(os.environ.get('XDG_CONFIG_HOME', str(Path.home() / '.config'))) / 'vidaa-remote')
+    parser.add_argument('--output', type=Path, default=default_config / 'client.pem')
     args = parser.parse_args()
     try:
         if args.output.exists() or args.output.is_symlink():
