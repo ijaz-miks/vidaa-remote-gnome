@@ -1,0 +1,30 @@
+name: Checks
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  ubuntu:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          clean: false
+          persist-credentials: false
+      - name: Install Ubuntu libraries
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3-venv python3-gi python3-gi-cairo python3-cryptography gir1.2-gtk-4.0 gir1.2-adw-1 gir1.2-secret-1 openssl xvfb dbus-x11 desktop-file-utils
+      - name: Install and test
+        run: |
+          /usr/bin/python3 tools/install.py --data-home "$RUNNER_TEMP/vidaa-data" --bin-dir "$RUNNER_TEMP/vidaa-bin"
+          "$RUNNER_TEMP/vidaa-data/vidaa-remote/.venv/bin/python" -m unittest discover -s tests -v
+          desktop-file-validate "$RUNNER_TEMP/vidaa-data/applications/dev.local.VidaaRemote.desktop"
+      - name: Preview without device access
+        run: |
+          dbus-run-session -- xvfb-run -a "$RUNNER_TEMP/vidaa-bin/vidaa-remote" --preview --quit-after 3

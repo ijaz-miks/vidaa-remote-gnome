@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=VIDAA Remote
+Comment=Control your VIDAA TV from GNOME
+Exec=@EXEC@
+Icon=dev.local.VidaaRemote
+Terminal=false
+Categories=AudioVideo;
+Keywords=TV;Remote;VIDAA;Hisense;
+StartupNotify=true
+StartupWMClass=dev.local.VidaaRemote
