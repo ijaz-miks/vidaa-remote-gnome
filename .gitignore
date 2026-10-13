@@ -23,3 +23,9 @@ settings.json
 vendor/
 tests/fixtures/
 test-artifacts/
+*.app/
+*.iconset/
+*.fifo
+.DS_Store
+status.json
+runtime.json
